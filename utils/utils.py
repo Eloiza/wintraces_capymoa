@@ -29,7 +29,6 @@ def calculate_windowed_accuracy(preds, labels, save_path, drift_points=None, win
 
     df.to_csv(save_path)
 
-
 def save_as_arff(features, labels, save_path):
     labels = labels.reshape(labels.shape[0], 1)    
     dataset = np.concatenate((features, labels), axis = 1)
