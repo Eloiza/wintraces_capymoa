@@ -22,12 +22,14 @@ def calculate_windowed_accuracy(preds, labels, save_path, drift_points=None, win
                 _ = window_label.pop(0)
     
     if drift_points is not None:
-        df = pd.DataFrame({"accuracy":acc,
+        df = pd.DataFrame({"index":[i for i in range(len(acc))],
+                           "accuracy":acc,
                            "drift": drift_points})
     else:
-        df = pd.DataFrame({"accuracy":acc})
+        df = pd.DataFrame({"index":[i for i in range(len(acc))],
+                           "accuracy":acc})
 
-    df.to_csv(save_path)
+    df.to_csv(save_path, index=False)
 
 def save_as_arff(features, labels, save_path):
     labels = labels.reshape(labels.shape[0], 1)    
@@ -64,8 +66,8 @@ def load_annotations(csv_path, count_drop=50):
     annotations = pd.read_csv(csv_path)
     annotations = annotations.dropna(subset=["class"])
 
-    # class_counts = annotations["class"].value_counts()
-    # annotations = annotations[annotations["class"].isin(class_counts[class_counts > count_drop].index)]
+    class_counts = annotations["class"].value_counts()
+    annotations = annotations[annotations["class"].isin(class_counts[class_counts > count_drop].index)]
     
     annotations = annotations.sort_values(by=["first_seen"])
     annotations = annotations.reset_index(drop=True)

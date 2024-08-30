@@ -3,12 +3,13 @@ Special code to run drift and re-extract tfidf features
 """
 
 import os 
+import argparse
 import numpy as np 
 import pandas as pd 
 
 from capymoa.stream import ARFFStream, Schema
 from capymoa.instance import LabeledInstance
-from capymoa.drift.detectors import ADWIN
+from capymoa.drift.detectors import ADWIN, DDM
 from capymoa.classifier import HoeffdingTree
  
 from utils.utils import load_annotations, calculate_windowed_accuracy, local_read_files_from_df, read_log
@@ -18,14 +19,15 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 # ANNOTATIONS_PATH = '../data/wintraces.csv'
 
 LOG_PATH = "../WinTracesAnalysis/wintraces/data/logs"
-ANNOTATIONS_PATH = "../WinTracesAnalysis/wintraces/data/wintraces.csv"
+# ANNOTATIONS_PATH = "../WinTracesAnalysis/wintraces/data/wintraces.csv"
+ANNOTATIONS_PATH = "../new_features/csv_files/ms_defender_first_seen_labels.csv"
 
-def main():    
-    max_size = 128
+def main(max_size, save_path, count_drop=20):    
+    max_size = max_size
     #load data 
-    df = load_annotations(ANNOTATIONS_PATH)
+    df = load_annotations(ANNOTATIONS_PATH, count_drop=count_drop)
     
-    train_size = int(len(df) * 0.10)
+    train_size = int(len(df) * 0.25)
     train_df = df.iloc[:train_size]
     train_traces = local_read_files_from_df(LOG_PATH, train_df)
     print(f"Loaded {len(train_traces)} train traces")
@@ -45,7 +47,8 @@ def main():
 
     #init model stuff 
     hoeff_tree = HoeffdingTree(schema=schema, grace_period=15)
-    detector = ADWIN(0.002)
+    # detector = ADWIN(0.002)
+    detector = DDM()
     
     class_map = {class_name : index for index, class_name in enumerate(np.unique(df["class"]))}
     
@@ -56,7 +59,9 @@ def main():
     retrain_size = 200
     processed_instance = 0
     drift_points = []
-    for i, md5 in enumerate(df["md5"].to_list()):
+    
+    md5 = df["md5"].to_list()
+    for i, md5 in enumerate(md5):
         #load a single trace data
         path = os.path.join(LOG_PATH, md5 + ".log")
         trace_data = read_log(path)
@@ -71,7 +76,7 @@ def main():
 
         prediction = hoeff_tree.predict(instance)
         hoeff_tree.train(instance)
-        
+
         preds.append(prediction)
         
         #update training window to be used in case of drift
@@ -105,8 +110,16 @@ def main():
         drift_points.append(has_drifted)                
         print(f"{i}/{stream_size}")
         
-        
-    calculate_windowed_accuracy(preds, df["class"].to_list(), "deleteme.csv", drift_points=drift_points)
+    labels = [class_map[c] for c in df["class"].to_list()]
+    calculate_windowed_accuracy(preds, labels, save_path, drift_points=drift_points)
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Run experiments at once")
+    
+    parser.add_argument("--max_size", type=int, help="max size for features")
+    parser.add_argument("--save_path", type=str, help="path to save results")
+    parser.add_argument("--count_drop", default=20, type=int, help="remove classes with less then this size of sampless")
+    
+    args = parser.parse_args()
+    main(args.max_size, args.save_path, args.count_drop)
+    

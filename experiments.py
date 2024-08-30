@@ -1,7 +1,7 @@
 from capymoa.classifier import HoeffdingTree
 from capymoa.drift.detectors import ADWIN
 
-def run_static(stream, grace_period=15, train_until=188):
+def run_static(stream, grace_period=15, train_until=250):
     hoeff_tree = HoeffdingTree(schema=stream.get_schema(), grace_period=grace_period)
     preds, labels = [], []
     processed_instance = 0 
