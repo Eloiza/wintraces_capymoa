@@ -1,0 +1,70 @@
+Analyzing class: AgentTesla - 71 samples
+Stationary Features: 77
+Non stationary Features: 26
+Constant features: 25
+
+Analyzing class: Banker - 182 samples
+Stationary Features: 110
+Non stationary Features: 14
+Constant features: 4
+
+Analyzing class: Banload - 421 samples
+Stationary Features: 115
+Non stationary Features: 3
+Constant features: 10
+
+Analyzing class: Bladabindi - 41 samples
+Stationary Features: 98
+Non stationary Features: 12
+Constant features: 18
+
+Analyzing class: Dynamer - 73 samples
+Stationary Features: 92
+Non stationary Features: 19
+Constant features: 17
+
+Analyzing class: Fareit - 29 samples
+Stationary Features: 58
+Non stationary Features: 22
+Constant features: 48
+
+Analyzing class: FormBook - 21 samples
+Stationary Features: 22
+Non stationary Features: 51
+Constant features: 55
+
+Analyzing class: Occamy - 54 samples
+Stationary Features: 97
+Non stationary Features: 9
+Constant features: 22
+
+Analyzing class: Skeeyah - 52 samples
+Stationary Features: 85
+Non stationary Features: 26
+Constant features: 17
+
+Analyzing class: SodinokibiCrypt - 34 samples
+Stationary Features: 86
+Non stationary Features: 10
+Constant features: 32
+
+Analyzing class: Tiggre - 104 samples
+Stationary Features: 84
+Non stationary Features: 26
+Constant features: 18
+
+Analyzing class: Valla - 32 samples
+Stationary Features: 84
+Non stationary Features: 12
+Constant features: 32
+
+Analyzing class: Wacatac - 95 samples
+Stationary Features: 99
+Non stationary Features: 15
+Constant features: 14
+
+Analyzing class: Ymacco - 108 samples
+Stationary Features: 107
+Non stationary Features: 9
+Constant features: 12
+

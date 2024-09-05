@@ -20,6 +20,7 @@ def calculate_windowed_accuracy(preds, labels, save_path, drift_points=None, win
             if len(window_pred) == window_size:
                 _ = window_pred.pop(0)
                 _ = window_label.pop(0)
+    print(f"Mean Acc over Windows: {np.mean(acc)}")
     
     if drift_points is not None:
         df = pd.DataFrame({"index":[i for i in range(len(acc))],
