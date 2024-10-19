@@ -4,6 +4,7 @@ import numpy as np
 import experiments
 import utils.utils as utils 
 from capymoa.stream import ARFFStream
+from capymoa.stream.generator import SEA
 
 def main(input_file, save_dir):
     if input_file.split(".")[-1] != 'arff':
@@ -22,11 +23,11 @@ def main(input_file, save_dir):
     utils.calculate_windowed_accuracy(preds_test_then_train, labels_test_then_train, os.path.join(save_dir, "test_then_train.csv"))
     print("Done test then train")
     
-    if not "tfidf" in input_file:        
-        stream.restart()
-        preds_drift, labels_drift, drift_points = experiments.run_drift(stream)
-        utils.calculate_windowed_accuracy(preds_drift, labels_drift, os.path.join(save_dir, "drift.csv"), drift_points)
-        print("Done drift")
+    # if not "tfidf" in input_file:        
+    stream.restart()
+    preds_drift, labels_drift, drift_points = experiments.run_drift(stream)
+    utils.calculate_windowed_accuracy(preds_drift, labels_drift, os.path.join(save_dir, "drift.csv"), drift_points)
+    print("Done drift")
 
     print("All done! :)")
 
