@@ -9,23 +9,43 @@ from datetime import datetime
 from typing import List, Dict, Tuple
 from sklearn.metrics import accuracy_score
 
+def drop_class(features, labels, class_name):
+    new_features = []
+    new_labels = []
+    for f, l in zip(features, labels):
+        if l != class_name:
+            new_features.append(f)
+            new_labels.append(l)
+            
+    new_features = np.array(new_features)
+    new_labels = np.array(new_labels)
+    
+    return new_features, new_labels
 
-def calculate_windowed_accuracy(preds, labels, save_path, drift_points=None, window_size=100):
+    
+def calculate_windowed_accuracy(preds, labels, save_path, drift_points=None, window_size=32):
     acc = []
     window_pred, window_label = [], [] 
     for pred, label in zip(preds, labels):
             window_pred.append(pred)
             window_label.append(label)
             acc.append(accuracy_score(window_label, window_pred)*100)
-            if len(window_pred) == window_size:
+            if len(window_pred) > window_size:
                 _ = window_pred.pop(0)
                 _ = window_label.pop(0)
     print(f"Mean Acc over Windows: {np.mean(acc)}")
     
     if drift_points is not None:
-        df = pd.DataFrame({"index":[i for i in range(len(acc))],
-                           "accuracy":acc,
-                           "drift": drift_points})
+        if isinstance(drift_points, dict):
+            df = {"index":[i for i in range(len(acc))],
+                  "accuracy":acc}
+            
+            df.update(drift_points)
+            df = pd.DataFrame(df)
+        else:    
+            df = pd.DataFrame({"index":[i for i in range(len(acc))],
+                            "accuracy":acc,
+                            "drift": drift_points})
     else:
         df = pd.DataFrame({"index":[i for i in range(len(acc))],
                            "accuracy":acc})
