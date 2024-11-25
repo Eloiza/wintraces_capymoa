@@ -10,6 +10,7 @@ from skmultiflow.drift_detection.adwin import ADWIN as sk_adwin
 def run_static(stream, grace_period=15, train_until=250):
     hoeff_tree = HoeffdingTree(schema=stream.get_schema(), grace_period=grace_period)
     preds, labels = [], []
+    acertos = []
     processed_instance = 0 
     hit = 0 
     
@@ -23,10 +24,11 @@ def run_static(stream, grace_period=15, train_until=250):
         labels.append(instance.y_index)
         if prediction == instance.y_index:
             hit +=1
+        acertos.append(prediction == instance.y_index)
         processed_instance += 1
 
     print(f"static accuracy: {hit/processed_instance}")
-    return preds, labels 
+    return preds, labels, acertos 
 
 def run_drift(stream, grace_period=15, retrain_size=50, trigger="scikit"):
     hoeff_tree = HoeffdingTree(schema=stream.get_schema(), grace_period=grace_period)
@@ -45,6 +47,7 @@ def run_drift(stream, grace_period=15, retrain_size=50, trigger="scikit"):
     drift_points = []
     hit = 0 
     has_changed = False 
+    acertos = []
     while stream.has_more_instances():
         instance = stream.next_instance()
         prediction = hoeff_tree.predict(instance)
@@ -60,6 +63,7 @@ def run_drift(stream, grace_period=15, retrain_size=50, trigger="scikit"):
 
         processed_instance += 1
         check_prediction = float(instance.y_index == prediction)
+        acertos.append(check_prediction)
         hit += check_prediction
         
         if trigger == "scikit":
@@ -88,11 +92,11 @@ def run_drift(stream, grace_period=15, retrain_size=50, trigger="scikit"):
             has_changed = False 
             
     print(f"drift accuracy: {hit/processed_instance}")
-    return preds, labels, drift_points
+    return preds, labels, drift_points, acertos
     
 def run_test_then_train(stream, grace_period=15):
     hoeff_tree = HoeffdingTree(schema=stream.get_schema(), grace_period=grace_period)
-    preds, labels = [], []
+    preds, labels, acertos = [], [], []
     hit = 0 
     processed_instance = 0 
     while stream.has_more_instances():
@@ -102,9 +106,11 @@ def run_test_then_train(stream, grace_period=15):
         
         if prediction == instance.y_index:
             hit += 1
+        
+        acertos.append(prediction == instance.y_index)
         preds.append(prediction)
         labels.append(instance.y_index)
         processed_instance += 1
     
     print(f"test then train accuracy: {hit/processed_instance}")
-    return preds, labels 
+    return preds, labels, acertos

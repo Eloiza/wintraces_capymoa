@@ -23,7 +23,7 @@ def drop_class(features, labels, class_name):
     return new_features, new_labels
 
     
-def calculate_windowed_accuracy(preds, labels, save_path, drift_points=None, window_size=32):
+def calculate_windowed_accuracy(preds, labels, acertos, save_path, drift_points=None, window_size=32):
     acc = []
     window_pred, window_label = [], [] 
     for pred, label in zip(preds, labels):
@@ -45,10 +45,12 @@ def calculate_windowed_accuracy(preds, labels, save_path, drift_points=None, win
         else:    
             df = pd.DataFrame({"index":[i for i in range(len(acc))],
                             "accuracy":acc,
-                            "drift": drift_points})
+                            "drift": drift_points,
+                            "acertos": acertos})
     else:
         df = pd.DataFrame({"index":[i for i in range(len(acc))],
-                           "accuracy":acc})
+                           "accuracy":acc, 
+                           "acertos": acertos})
 
     df.to_csv(save_path, index=False)
 

@@ -89,6 +89,7 @@ def main(max_size, save_path, count_drop=20):
         detector.add_element(float(instance.y_index == prediction))
         has_drifted = detector.detected_change()
         if has_drifted:
+            del hoeff_tree
             print(f"Found drift at {processed_instance}")
             hoeff_tree = HoeffdingTree(schema=schema, grace_period=15)
 
@@ -122,4 +123,3 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     main(args.max_size, args.save_path, args.count_drop)
-    

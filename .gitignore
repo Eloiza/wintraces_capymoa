@@ -1,3 +1,5 @@
+results/
+paper_results/
 data/
 *.png 
 *.arff 

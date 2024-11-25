@@ -1,4 +1,5 @@
 import glob 
+import argparse
 import numpy as np 
 import pandas as pd 
 import seaborn as sns 
@@ -30,39 +31,6 @@ def plot_family_evolution(df, save_path="family_population_over_years.png"):
     plt.savefig(save_path)
     plt.show()
 
-# file_names = ["results/static_tfidf512.csv", "results/test_then_train_tfidf512.csv"]
-# legend_names = ["static", "test_then_train"]
-# for i, filename in enumerate(file_names):
-#     df = pd.read_csv(filename)
-#     print(filename)
-#     # legend_name = filename.split(".")[0].split("_")[-1]
-#     # legend_name = filename.split(".")[0].split("_")[:]
-
-#     plt.plot(df["index"], df["accuracy"], label=legend_names[i])
-
-# plt.title("tfidf512 features")
-# plt.legend()    
-# plt.show()
-
-# df = pd.read_csv("../new_features/csv_files/ms_defender_first_seen_labels.csv")
-# df = pd.read_csv("../new_features/csv_files/wintraces.csv")
-
-# df = df.dropna(subset=["class"])
-# class_counts = df["class"].value_counts()
-# df = df[df["class"].isin(class_counts[class_counts > 50].index)]
-
-# df = df.sort_values(by=["first_seen"])
-# df = df.reset_index(drop=True)
-# print(f"df len: {len(df)}")
-    
-# sns.set_theme(style="whitegrid", palette="muted")
-# ax = sns.swarmplot(data=df, x="first_seen", y="class")
-# ax.set(ylabel="")
-
-# for x_point in drift_points:
-#     plt.axvline(x_point, color='black', linestyle='dashed')
-
-# plt.show()
 def plot_facetgrid_families(df, save_path="families_population_facetgrid.png"):
     # # Initialize the FacetGrid object
     pal = sns.cubehelix_palette(10, rot=-.25, light=.7)
@@ -126,73 +94,140 @@ def plot_model_vs_features(df, data_path, title, save_path):
     plt.show()
 
 def main():
-
-    # df = pd.read_csv("../new_features/csv_files/wintraces.csv")
-    df = pd.read_csv("../new_features/csv_files/ms_defender_first_seen_labels.csv")
-    print("len original df", len(df))
-    df = df.dropna(subset=["class"])
-    class_counts = df["class"].value_counts()
-    
-    drop_value = 50
-    df = df[df["class"].isin(class_counts[class_counts > drop_value].index)]
-    
-    df['first_seen'] = pd.to_datetime(df['first_seen'])
-    df = df.sort_values(by=["first_seen"])
-    df = df.reset_index(drop=True)
-    print(f"drop {drop_value} len", len(df))
-
     # plot_family_evolution(df)
     # plot_facetgrid_families(df)
     
-    # for model_style in ["static","drift", "test_then_train"]:    
-    #     plot_model_vs_features(df, f"results/default_loader/ms_defender/{model_style}/*",
-    #                             f"{model_style.capitalize()} accuracy over features",
-    #                             f"{model_style}_features_over.png")
-        
-    # plt.style.use("tableau-colorblind10")
-    # plt.figure(figsize=(15, 8))    
-    # feature_name = "Stationary Test"
+    plt.style.use("tableau-colorblind10")
+    plt.figure(figsize=(15, 8))    
 
-    # path = f"./ms_defender_drop50_results/{feature_name}/static.csv"
-
-    # path = f"stationary_test_chunk1_1k/static.csv"
-    # df = pd.read_csv(path)    
-    # print(path, "len(df)", len(df))
-    # plt.plot(df["index"], df["accuracy"], label="static")
-
-    # path = f"stationary_test_chunk1_1k/test_then_train.csv"
-    # df = pd.read_csv(path)
-    # print(path, "len(df)", len(df))
-    # plt.plot(df["index"], df["accuracy"], label="test_then_train")
+    dir_name = "ms_defender_tfidf64_tfidftrain25_scikit_trigger_result"
+    feature_name = "tfidf64 25% train"
     
-    # path = f"stationary_test_chunk1_1k/drift.csv"
-    path =f"ms_defender_drop20_drift_ddm.csv"
-    df = pd.read_csv(path)
-    print(path, "len(df)", len(df))
-    plt.plot(df["index"], df["accuracy"], label="drift")
+    path = f"{dir_name}/static.csv"
+    df_static = pd.read_csv(path)
+    print(path, "len(df_static)", len(df_static))
+    plt.plot(df_static["index"], df_static["accuracy"], label="static")
 
-    drift_points = list(df[df["drift"]].index)
-    for x_point in drift_points:
-        plt.axvline(x_point, color='black', linestyle='dashed')
+    path = f"{dir_name}/test_then_train.csv"
+    df_test_then_train = pd.read_csv(path)
+    print(path, "len(df_test_then_train)", len(df_test_then_train))
+    plt.plot(df_test_then_train["index"], df_test_then_train["accuracy"], label="test_then_train")
+    
+    path = f"{dir_name}/drift.csv"
+    df_drift_adwin = pd.read_csv(path)
+    print(path, "len(df_drift_adwin)", len(df_drift_adwin))
+    plt.plot(df_drift_adwin["index"], df_drift_adwin["accuracy"], label="drift_adwin_scikit")
+    
+    drift_points_adwin = list(df_drift_adwin[df_drift_adwin["drift"]].index)
+    for x_point in drift_points_adwin:
+        plt.axvline(x_point, color='red', linestyle='dashed')
+    
+    # path = "data/ms_defender/drop50_default/results/tfidf256/static.csv"
+    # df_static = pd.read_csv(path)
+    # print(path, "len(df_static)", len(df_static))
+    # plt.plot(df_static["index"], df_static["accuracy"], label="static")
+
+    # path = "data/ms_defender/drop50_default/results/tfidf256/test_then_train.csv"
+    # df_test_then_train = pd.read_csv(path)
+    # print(path, "len(df_test_then_train)", len(df_test_then_train))
+    # plt.plot(df_test_then_train["index"], df_test_then_train["accuracy"], label="test_then_train")
+
+    # path = "data/ms_defender/drop50_default/results/tfidf256/drift.csv"
+    # df_drift_adwin = pd.read_csv(path)
+    # print(path, "len(df_drift_adwin)", len(df_drift_adwin))
+    # plt.plot(df_drift_adwin["index"], df_drift_adwin["accuracy"], label="drift_adwin")
+    
+    # drift_points_adwin = list(df_drift_adwin[df_drift_adwin["drift"]].index)
+    # for x_point in drift_points_adwin:
+    #     plt.axvline(x_point, color='red', linestyle='dashed')
+    
+    # path = f"ms_defender_drop50_drift_ddm_del.csv"
+    # df_drift_ddm = pd.read_csv(path)
+    # print(path, "len(df_drift_ddm)", len(df_drift_ddm))
+    # plt.plot(df_drift_ddm["index"], df_drift_ddm["accuracy"], label="drift_ddm")
+
+    # drift_points_ddm = list(df_drift_ddm[df_drift_ddm["drift"]].index)
+    # for x_point in drift_points_ddm:
+    #     plt.axvline(x_point, color='black', linestyle='dashed')
         
     custom_lines = []
-    custom_lines.append(Line2D([0], [0], linestyle='--',color= "black", label="drift points"))
+    # custom_lines.append(Line2D([0], [0], linestyle='--',color= "black", label="drift ddm"))
+    custom_lines.append(Line2D([0], [0], linestyle='--',color= "red", label="drift adwin scikit"))
         
     #plot train line 
-    plt.axvline(int(len(df) * 0.25), color='orange', linestyle="dashed")
-    custom_lines.append(Line2D([0], [0], linestyle='--',color="orange", label="train samples"))
+    # plt.axvline(int(len(df) * 0.25), color='orange', linestyle="dashed")
+    # custom_lines.append(Line2D([0], [0], linestyle='--',color="orange", label="train samples"))
 
-    plt.title(f"Models Accuracy for {feature_name.upper()}")
+    plt.title(f"Models Accuracy for {feature_name.upper()} w=32")
+    
     legend_models = plt.legend(loc=0)
     legend_lines = plt.legend(handles=custom_lines, loc=2)
 
-    axes = plt.gca() 
-    axes.add_artist(legend_models)
-    axes.add_artist(legend_lines)
+    # axes = plt.gca() 
+    # axes.add_artist(legend_models)
+    # axes.add_artist(legend_lines)
     
     plt.legend()
-    plt.savefig(f"result_{feature_name}_static_250_chunk1.png")    
+    plt.savefig(f"result_{feature_name}.png")    
     plt.show()
 
+#######################################################################################
+    # df = pd.read_csv("../new_features/csv_files/ms_defender_first_seen_labels.csv")
+    
+    # print("len original df", len(df))
+    # df = df.dropna(subset=["class"])
+    # class_counts = df["class"].value_counts()
+    
+    # drop_value = 15
+    # df = df[df["class"].isin(class_counts[class_counts > drop_value].index)]
+    
+    # df['first_seen'] = pd.to_datetime(df['first_seen'])
+    # df = df.sort_values(by=["first_seen"])
+    # df = df.reset_index(drop=True)
+    # print(f"drop {drop_value} len", len(df))
+    
+    # print(f"dataset size: {len(df)}")
+    # plt.figure(figsize=(15, 8))
+
+    # # df = df[(df['first_seen'].dt.year >= 2014) & (df['first_seen'].dt.year < 2022)]
+
+    # sns.set_theme(style="whitegrid", palette="muted")
+    # ax = sns.swarmplot(data=df, x="first_seen", y="class", hue="class")
+    
+    # ax = sns.stripplot(
+    #     data=df, x="first_seen", y="class", hue="class",
+    #     jitter=False, s=15, linewidth=0, alpha=.3,
+    # )
+    
+    # for index in drift_points_adwin:
+    #     item = df.iloc[index]
+    #     plt.axvline(item["first_seen"], color='red', linestyle='dashed')
+    
+    # # for index in drift_points_ddm:
+    # #     print(index)
+    # #     item = df.iloc[index]
+    # #     plt.axvline(item["first_seen"], color='black', linestyle='dashed')
+    
+    
+    # legend_models = plt.legend(loc=0)
+    # legend_lines = plt.legend(handles=custom_lines, loc=1)
+
+    # axes = plt.gca() 
+    # axes.add_artist(legend_models)
+    # axes.add_artist(legend_lines)
+     
+    # ax.set(ylabel="")
+    # plt.title("Malware families population over time with TFIDF256 Drift")
+    # plt.savefig("family_population_drift_tfidf256.png")
+    # plt.show()
+
+
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Run experiments at once")
+    
+    parser.add_argument("--feature_name", type=str, help="input file path")
+    parser.add_argument("--save_dir", type=str, help="path to save results")
+    
+    args = parser.parse_args()
+    
     main()
